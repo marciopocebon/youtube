@@ -7,7 +7,8 @@
 # license: MIT License
 
 function youtube(){
-	
+
+	_gr="\e[36;1m" ; _yl="\e[33;1m" ; _of="\e[m"
 	local _video=$(mktemp)
 	local _channel=$(mktemp)
 	local _token=$(mktemp)
@@ -27,14 +28,14 @@ function youtube(){
 	local _tchannnel=$(sed -n '/title/{p; q;}' "$_channel" | sed 's/<title>  //g')
 	local _subscriber=$(sed -n '/subscriber-count/{p; q;}' "$_channel" | sed 's/.*subscriber-count//g' | sed 's/<[^>]*>//g;s/.*>//g')
 
-	echo "Título do canal: $_tchannnel"
-	echo "Inscritos: $_subscriber"
-	echo "Título: $_title"
-	echo "Data: $_publi"
-	echo "Visualizações: $_views"
-	echo "Gostei: $_likes"
-	echo "Dislikes: $_dislikes"
-	echo "$_comments"
+	echo -e "${_gr}Título do canal: ${_yl}$_tchannnel"
+	echo -e "${_gr}Inscritos: ${_yl}$_subscriber"
+	echo -e "${_gr}Título: ${_yl}$_title"
+	echo -e "${_gr}Data: ${_yl}$_publi"
+	echo -e "${_gr}Visualizações: ${_yl}$_views"
+	echo -e "${_gr}Gostei: ${_yl}$_likes"
+	echo -e "${_gr}Dislikes: ${_yl}$_dislikes"
+	echo -e "${_gr}$_comments${_of}"
 
 }
 
