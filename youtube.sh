@@ -1,19 +1,82 @@
 #!/usr/bin/env bash
 # shellcheck disable=2155
+# vim: et ts=2 sw=2 ft=sh:
+# https://www.youtube.com/watch?v=o62vOYSnPVk
 
 # author: Marcos Oliveira <terminalroot.com.br>
 # describe: Get data youtube video and channel details
-# version: 0.1
+# version: 1.0
 # license: MIT License
 
-function youtube(){
+COLOR=0
+default_channel="https://www.youtube.com/TerminalRootTV"
 
-	_gr="\e[36;1m" ; _yl="\e[33;1m" ; _of="\e[m"
-	local _video=$(mktemp)
+usage(){
+  cat <<EOF
+usage: ${0##*/} [options] [video]
+  
+  Options:
+    -c            Show channel title
+    -i            Show scribers
+    -t            Show video title
+    -d            Show date publish
+    -v            Show views
+    -g            Show likes
+    -n            Show dislikes
+    -C            Show comments
+    -h,--help     Print this help message
+    --version     Print version
+    -u            Get update
+    --no-color    Disable colors
+
+* This option '-u' still not implanted
+
+EOF
+
+}
+
+if [[ $1 = @(-h|--help) ]];then
+  usage
+  exit 0
+fi
+
+[[ $1 = @(--version) ]] && sed -n '/^#.*version/p' $0 | sed 's/#.//' && exit 0
+[[ $1 =~ ^http ]] && _todos=1
+[[ -z $1 ]] && _todos=1
+
+function youtube(){
+	
+  while [[ "$1" ]]; do
+    [[ "$1" =~ ^http ]] && URL=$1
+    [[ "$1" =~ ^--no-color$ ]] && COLOR=1
+  shift
+  done
+
+  if [[ "$COLOR" == "0" ]]; then
+    _gr="\e[36;1m" ; _yl="\e[33;1m" ; _of="\e[m"; _rd="\e[30;1m"
+  else
+    _gr=;_yl=;_of=;_rd=
+  fi
+
+
+  if [[ -z "$URL" ]]; then
+    if [[ -z "$default_channel" ]]; then
+      echo 'Informe a url do video.'
+      exit 1
+    else
+      local _recent=$(mktemp)
+      wget "$default_channel/videos" -O "$_recent" 2>/dev/null
+      local idv=$(grep 'data-context-item-id' ${_recent} | sed -n 1p | sed 's/.*=\"//g' | sed 's/\"//g')
+      local URL="https://youtube.com/watch?v=$idv"
+      echo -ne "${_rd}+recente...${_of}\r"
+    fi
+  fi
+
+  local _video=$(mktemp)
 	local _channel=$(mktemp)
 	local _token=$(mktemp)
 	local _url="https://youtube.com/channel"
-	wget "$1" -O "$_video" 2>/dev/null
+	wget "$URL" -O "$_video" 2>/dev/null
 
 	local _title=$(grep '<title>' "$_video" | sed 's/<[^>]*>//g' | sed 's/ - You.*//g')
 	
@@ -28,7 +91,7 @@ function youtube(){
 	
 	# Adicionado COMMENTS em vez de -i coment
 	local _data=$(grep 'COMMENTS' "$_video" | sed 's/.*: \"//g ; s/\".*//g')
-	wget "$1&lc=$_data" -O $_token 2>/dev/null
+	wget "$URL&lc=$_data" -O $_token 2>/dev/null
 	
 	# filtrado somente os números
 	local _comments=$(grep -i 'coment' "$_token" | sed -n 1p | sed 's/<[^>]*>//g ; s/.*• //g')
@@ -36,18 +99,51 @@ function youtube(){
 	local _tchannnel=$(sed -n '/title/{p; q;}' "$_channel" | sed 's/<title>  //g')
 	local _subscriber=$(sed -n '/subscriber-count/{p; q;}' "$_channel" | sed 's/.*subscriber-count//g' | sed 's/<[^>]*>//g;s/.*>//g')
 
-	echo -e "${_gr}Título do canal: ${_yl}$_tchannnel"
-	echo -e "${_gr}Inscritos: ${_yl}$_subscriber"
-	echo -e "${_gr}Título: ${_yl}$_title"
-	echo -e "${_gr}Data: ${_yl}$_publi"
-	echo -e "${_gr}Visualizações: ${_yl}$_views"
-	echo -e "${_gr}Gostei: ${_yl}$_likes"
-	echo -e "${_gr}Dislikes: ${_yl}$_dislikes"
-	
-	# Exibido igual aos demais
-	echo -e "${_gr}Comentários: ${_yl}$_comments${_of}"
 
+  export dados=("$_tchannnel" "$_subscriber" "$_title" "$_publi" "$_views" "$_likes" "$_dislikes" "$_comments")
+  
 }
 
+get_all(){
+ echo -e "${_gr}canal: ${_yl}${dados[0]}"
+ echo -e "${_gr}inscritos: ${_yl}${dados[1]}"
+ echo -e "${_gr}título: ${_yl}${dados[2]}"
+ echo -e "${_gr}data: ${_yl}${dados[3]}"
+ echo -e "${_gr}visualizações: ${_yl}${dados[4]}"
+ echo -e "${_gr}gostei: ${_yl}${dados[5]}"
+ echo -e "${_gr}dislikes: ${_yl}${dados[6]}"
+ echo -e "${_gr}comentários: ${_yl}${dados[7]}${_of}"
+}
 
-youtube "$1"
+echo -en 'Aguarde ...\r'
+youtube "$@"
+
+if [[ "$@" == "--no-color" ]]; then
+  set -- $(echo $@ | sed 's/\-\-no\-color/-citdvgnC/g')
+fi
+
+while 
+
+  getopts ':citdvgnC' flag;
+   
+  
+do
+  
+	case $flag in
+		c) echo -e "${_gr}canal: ${_yl}${dados[0]}";;
+		i) echo -e "${_gr}inscritos: ${_yl}${dados[1]}";;
+		t) echo -e "${_gr}título: ${_yl}${dados[2]}";;
+		d) echo -e "${_gr}data: ${_yl}${dados[3]}";;
+		v) echo -e "${_gr}visualizações: ${_yl}${dados[4]}";;
+		g) echo -e "${_gr}gostei: ${_yl}${dados[5]}";;
+		n) echo -e "${_gr}desgosteis: ${_yl}${dados[6]}";;
+		C) echo -e "${_gr}comentários: ${_yl}${dados[7]}${_of}";;
+    # ?) echo Opção inválida: -${OPTARG};;
+	esac
+shift $(( OPTIND - 1 ))
+done
+
+if [[ "$_todos" == "1" ]]; then
+  get_all
+fi
+
