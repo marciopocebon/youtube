@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # shellcheck disable=2155
 # vim: et ts=2 sw=2 ft=sh:
-# https://www.youtube.com/watch?v=o62vOYSnPVk
 
 # author: Marcos Oliveira <terminalroot.com.br>
 # describe: Get data youtube video and channel details
