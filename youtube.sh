@@ -99,7 +99,7 @@ function youtube(){
 	local _subscriber=$(sed -n '/subscriber-count/{p; q;}' "$_channel" | sed 's/.*subscriber-count//g' | sed 's/<[^>]*>//g;s/.*>//g')
 
 
-  export dados=("$_tchannnel" "$_subscriber" "$_title" "$_publi" "$_views" "$_likes" "$_dislikes" "$_comments")
+  export dados=("$_tchannnel" "$_subscriber" "$_title" "$_publi" "$_views" "$_likes" "$_dislikes" "$_comments" "$URL")
   
 }
 
@@ -112,6 +112,7 @@ get_all(){
  echo -e "${_gr}gostei: ${_yl}${dados[5]}"
  echo -e "${_gr}dislikes: ${_yl}${dados[6]}"
  echo -e "${_gr}comentários: ${_yl}${dados[7]}${_of}"
+ echo -e "${_gr}url: ${_yl}${dados[8]}${_of}"
 }
 
 echo -en 'Aguarde ...\r'
