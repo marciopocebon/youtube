@@ -1,5 +1,7 @@
-# youtube
+# Youtube Shell Script
+
 ![Youtube Shell Script Logo](youtube.png)
+
 Get data youtube video and channel details
 
 `usage: youtube [options] [video]`
