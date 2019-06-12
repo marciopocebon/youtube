@@ -139,7 +139,7 @@ fi
 
 while 
 
-  getopts ':citdvgnC' flag;
+  getopts ':citdvgnCE' flag;
    
   
 do
@@ -153,6 +153,7 @@ do
 		g) echo -e "${_gr}gostei: ${_yl}${dados[5]}";;
 		n) echo -e "${_gr}desgosteis: ${_yl}${dados[6]}";;
 		C) echo -e "${_gr}comentários: ${_yl}${dados[7]}${_of}";;
+    E) get_all && read -sn 1 ENTER
     # ?) echo Opção inválida: -${OPTARG};;
 	esac
 shift $(( OPTIND - 1 ))
