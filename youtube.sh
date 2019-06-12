@@ -64,7 +64,7 @@ function youtube(){
       exit 1
     else
       local _recent=$(mktemp)
-      wget "$default_channel/videos" -O "$_recent" 2>/dev/null
+      wget "$default_channel/videos" -qO "$_recent"
       local idv=$(grep 'data-context-item-id' ${_recent} | sed -n 1p | sed 's/.*=\"//g' | sed 's/\"//g')
       local URL="https://youtube.com/watch?v=$idv"
       echo -ne "${_rd}+recente...${_of}\r"
@@ -75,7 +75,7 @@ function youtube(){
 	local _channel=$(mktemp)
 	local _token=$(mktemp)
 	local _url="https://youtube.com/channel"
-	wget "$URL" -O "$_video" 2>/dev/null
+	wget "$URL" -qO "$_video"
 
 	local _title=$(grep '<title>' "$_video" | sed 's/<[^>]*>//g' | sed 's/ - You.*//g')
 	
@@ -86,20 +86,35 @@ function youtube(){
 	local _likes=$(grep 'like-button-renderer-like-button' "$_video" | sed -n 1p | sed 's/<[^>]*>//g;s/ //g')
 	local _dislikes=$(grep 'like-button-renderer-dislike-button' "$_video" | sed -n 1p | sed 's/<[^>]*>//g' | sed 's/ //g')
 	local _id=$(sed 's/channel/\n&/g' "$_video" | grep '^channel' |sed -n 1p | sed 's/isCrawlable.*//g;s/..,.*//g;s/.*"//g')
-	wget "$_url/$_id" -O "$_channel" 2>/dev/null
-	
+	wget "$_url/$_id" -qO "$_channel"
+
 	# Adicionado COMMENTS em vez de -i coment
 	local _data=$(grep 'COMMENTS' "$_video" | sed 's/.*: \"//g ; s/\".*//g')
-	wget "$URL&lc=$_data" -O $_token 2>/dev/null
+	wget "$URL&lc=$_data" -qO $_token
 	
 	# filtrado somente os números
 	local _comments=$(grep -i 'coment' "$_token" | sed -n 1p | sed 's/<[^>]*>//g ; s/.*• //g')
-	
-	local _tchannnel=$(sed -n '/title/{p; q;}' "$_channel" | sed 's/<title>  //g')
-	local _subscriber=$(sed -n '/subscriber-count/{p; q;}' "$_channel" | sed 's/.*subscriber-count//g' | sed 's/<[^>]*>//g;s/.*>//g')
 
+	local _tempty=$(cat "$_channel")
 
-  export dados=("$_tchannnel" "$_subscriber" "$_title" "$_publi" "$_views" "$_likes" "$_dislikes" "$_comments" "$URL")
+	if [[ -z "$_tempty" || $_tempty == "" ]]; then
+
+		if [[ ! -z "${default_channel}" ]]; then
+			wget "$default_channel" -qO "/tmp/canal.tmp"
+			local _tchannel=$(sed -n '/title/{p; q;}' "/tmp/canal.tmp" | sed 's/<title>  //g')
+			local _subscriber=$(sed -n '/subscriber-count/{p; q;}' "/tmp/canal.tmp" | sed 's/.*subscriber-count//g' | sed 's/<[^>]*>//g;s/.*>//g')
+		else
+			local _tchannel=$(sed -n '/title/{p; q;}' "$_channel" | sed 's/<title>  //g')
+			local _subscriber=$(sed -n '/subscriber-count/{p; q;}' "$_channel" | sed 's/.*subscriber-count//g' | sed 's/<[^>]*>//g;s/    .*>//g')
+		fi
+
+	else
+		local _tchannel=$(sed -n '/title/{p; q;}' "$_channel" | sed 's/<title>  //g')
+		local _subscriber=$(sed -n '/subscriber-count/{p; q;}' "$_channel" | sed 's/.*subscriber-count//g' | sed 's/<[^>]*>//g;s/.*>//g')
+
+	fi
+
+  	export dados=("$_tchannel" "$_subscriber" "$_title" "$_publi" "$_views" "$_likes" "$_dislikes" "$_comments" "$URL")
   
 }
 
