@@ -1,3 +1,4 @@
+# ⛔️ DEPRECATED
 # Youtube Shell Script
 
 ![Youtube Shell Script Logo](youtube.png)
